@@ -38,6 +38,10 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "dependencies": {
+            "RestSharp": {
+              "target": "Package",
+              "version": "[106.11.8-alpha.0.12, )"
+            },
             "Websocket.Client": {
               "target": "Package",
               "version": "[4.3.21, )"

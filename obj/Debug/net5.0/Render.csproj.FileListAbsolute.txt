@@ -18,3 +18,4 @@ C:\Users\gavin\RiderProjects\Render\Render\obj\Debug\net5.0\Render.dll
 C:\Users\gavin\RiderProjects\Render\Render\obj\Debug\net5.0\ref\Render.dll
 C:\Users\gavin\RiderProjects\Render\Render\obj\Debug\net5.0\Render.pdb
 C:\Users\gavin\RiderProjects\Render\Render\obj\Debug\net5.0\Render.genruntimeconfig.cache
+C:\Users\gavin\RiderProjects\Render\Render\bin\Debug\net5.0\RestSharp.dll
