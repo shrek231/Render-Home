@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "HTikWI/CTTpRvI49PpBu6dH64fCNPf6vRqxiNwisiNt1uetyzUmRj1Hrdb0hV8xA+oXTFU/v/jOAry4NgHMWWQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\gavin\\RiderProjects\\Render\\Render\\Render.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gavin\\.nuget\\packages\\restsharp\\106.11.8-alpha.0.12\\restsharp.106.11.8-alpha.0.12.nupkg.sha512"
+  ],
+  "logs": []
+}
