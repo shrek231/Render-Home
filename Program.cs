@@ -15,15 +15,14 @@ namespace Render {
             }
             if (OperatingSystem.IsLinux()) {
                 os = "linux";
-            }else{
+            } else {
                 Console.WriteLine("Unknown OS or unsupported");
             }
             //make dir
             string path = "none";
             if (os == "windows") {
                 path = @"C:\img\";
-            }
-            else {
+            } else {
                 path = "/home/img/";
             }
             DirectoryInfo di = Directory.CreateDirectory(path);
