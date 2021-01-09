@@ -4,12 +4,10 @@ using System.IO;
 using RestSharp;
 
 namespace Render {
-    class Program
-    {
+    class Program {
         public static string os = null;
         public static bool running = true;
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             //get os
             if (OperatingSystem.IsWindows()) {
                 os = "windows";
