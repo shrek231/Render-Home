@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using RestSharp;
 
@@ -12,20 +13,18 @@ namespace Render {
             //get os
             if (OperatingSystem.IsWindows()) {
                 os = "windows";
-            }
-            if (OperatingSystem.IsLinux()) {
+            } if (OperatingSystem.IsLinux()) {
                 os = "linux";
-            }else{
+            } else {
                 Console.WriteLine("Unknown OS or unsupported");
             }
             //make dir
             string path = "none";
             if (os == "windows") {
                 path = @"C:\img\";
-            }
-            else {
+            } else {
                 path = "/home/img/";
-            }
+            } 
             DirectoryInfo di = Directory.CreateDirectory(path);
             //init loop
             while (running) {
@@ -36,7 +35,24 @@ namespace Render {
                 string[] responce2 = response.ToString().Split(':');
                 Console.WriteLine(responce2[0]);
                 Console.WriteLine(responce2[1] + " " + responce2[0] + ".png");
-                //run responce2[1]+" "+responce2[0]] which should be the command to run blender
+                //run responce2[1]+" "+responce2[0] which should be the command to run blender
+                if (os == "linux") {
+                    ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", responce2[1]+" "+responce2[0]);
+                    procStartInfo.RedirectStandardOutput = true;
+                    procStartInfo.UseShellExecute = false;
+                    procStartInfo.CreateNoWindow = true;
+                    Process proc = new Process();
+                    proc.StartInfo = procStartInfo;
+                    proc.Start();
+                } else {
+                    Process process = new Process();
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                    startInfo.FileName = "cmd.exe";
+                    startInfo.Arguments = responce2[1]+" "+responce2[0];
+                    process.StartInfo = startInfo;
+                    process.Start();
+                }
                 request.AddParameter("file", path + responce2[0] + ".png");
                 var client1 = new RestClient("http://url.com?sendFrame?frameNum=" + responce2[0]);
                 var request1 = new RestRequest(Method.POST);
