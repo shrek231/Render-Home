@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -7,7 +7,9 @@ using System.Threading;
 using RestSharp;
 
 namespace Render {
-    class Program {
+    class Program
+    {
+        public static int resp;
         public static string blendpath = null;
         public static string sys = null;
         public static OperatingSystem os;
@@ -39,61 +41,74 @@ namespace Render {
             }
             int timeout = 1000; //start loop
             int fail = 0;
-            bool gttq = true;
-            while (running) {
-                if (fail > 1) {
-                    Console.WriteLine("no new frames, waiting 30 seconds.");
-                    timeout = 30000;
-                }
-                Thread.Sleep(timeout);
-                Console.WriteLine("\nRequesting new frame");
-                var client = new RestClient("https://BlenderRenderServer.youtubeadminist.repl.co/requestFrame");
-                var request = new RestRequest(Method.GET);
-                IRestResponse response = client.Execute(request); //call at anytime in code
-                WebClient Client = new WebClient ();
-                if (File.Exists(blendpath + "render.blend")) {
-                    //nothing to do
-                    Console.WriteLine("Not Redownloading");
-                } else {
-                    Console.WriteLine("Redownloading");
-                    Client.DownloadFile("https://BlenderRenderServer.youtubeadminist.repl.co/getBlend", blendpath + "render.blend");
-                }
-                Console.WriteLine("resp = "+response.Content);
-                string check = response.Content.ToString();
-                if (check.Contains('-')) {
-                    Console.WriteLine("No new frames");
-                    fail += 1;
-                    DirectoryInfo pn = new DirectoryInfo(path);
-                    foreach (FileInfo file in pn.GetFiles()) {
-                        file.Delete();
-                    } DirectoryInfo bl = new DirectoryInfo(blendpath);
-                    foreach (FileInfo file in bl.GetFiles()) {
-                        file.Delete();
+            try {
+                while (running) {
+                    if (fail > 1) {
+                        Console.WriteLine("no new frames, waiting 30 seconds.");
+                        timeout = 30000;
                     }
-                } else {
-                    fail = 0;
-                    Console.WriteLine("\nGot new frame "+response.Content);
-                } if (sys == "windows") {
-                    Process process = new Process();
-                    ProcessStartInfo startInfo = new ProcessStartInfo();
-                    startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                    startInfo.FileName = "cmd.exe";
-                    startInfo.Arguments = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + response.Content;
-                    process.StartInfo = startInfo;
-                    process.Start();
-                    process.WaitForExit();
-                } else {
-                    string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " + response.Content + "\"";
-                    arguments3 = Regex.Replace(arguments3, @"\n", "");
-                    ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments3);
-                    procStartInfo.RedirectStandardOutput = false; //error true
-                    procStartInfo.UseShellExecute = true; //false
-                    procStartInfo.CreateNoWindow = true;
-                    Process proc = new Process();
-                    proc.StartInfo = procStartInfo;
-                    proc.Start();
-                    proc.WaitForExit();
-                } try {
+                    Thread.Sleep(timeout);
+                    Console.WriteLine("\nRequesting new frame");
+                    var client = new RestClient("https://BlenderRenderServer.youtubeadminist.repl.co/requestFrame");
+                    var request = new RestRequest(Method.GET);
+                    IRestResponse response = client.Execute(request); //call at anytime in code
+                    int numb = int.Parse(response.Content);
+                    resp = numb;
+                    WebClient Client = new WebClient();
+                    if (File.Exists(blendpath + "render.blend"))
+                    {
+                        //nothing to do
+                        Console.WriteLine("Not Redownloading");
+                    } else {
+                        Console.WriteLine("Redownloading");
+                        Client.DownloadFile("https://BlenderRenderServer.youtubeadminist.repl.co/getBlend",
+                            blendpath + "render.blend");
+                    }
+
+                    Console.WriteLine("resp = " + response.Content);
+                    string check = response.Content.ToString();
+                    if (check.Contains('-')) {
+                        Console.WriteLine("No new frames");
+                        fail += 1;
+                        DirectoryInfo pn = new DirectoryInfo(path);
+                        foreach (FileInfo file in pn.GetFiles())
+                        {
+                            file.Delete();
+                        }
+
+                        DirectoryInfo bl = new DirectoryInfo(blendpath);
+                        foreach (FileInfo file in bl.GetFiles())
+                        {
+                            file.Delete();
+                        }
+                    } else {
+                        fail = 0;
+                        Console.WriteLine("\nGot new frame " + response.Content);
+                    }
+
+                    if (sys == "windows") {
+                        Process process = new Process();
+                        ProcessStartInfo startInfo = new ProcessStartInfo();
+                        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                        startInfo.FileName = "cmd.exe";
+                        startInfo.Arguments = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + response.Content;
+                        process.StartInfo = startInfo;
+                        process.Start();
+                        process.WaitForExit();
+                    } else {
+                        string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " +
+                                            response.Content + "\"";
+                        arguments3 = Regex.Replace(arguments3, @"\n", "");
+                        ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments3);
+                        procStartInfo.RedirectStandardOutput = false; //error true
+                        procStartInfo.UseShellExecute = true; //false
+                        procStartInfo.CreateNoWindow = true;
+                        Process proc = new Process();
+                        proc.StartInfo = procStartInfo;
+                        proc.Start();
+                        proc.WaitForExit();
+                    }
+
                     Console.WriteLine("Trying to send frame");
                     if (sys == "windows") {
                         Process process = new Process();
@@ -101,7 +116,7 @@ namespace Render {
                         startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         startInfo.FileName = "cmd.exe";
                         int num = int.Parse(response.Content);
-                        string arguments = $"/C curl -F {response.Content}=@{path}"+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
+                        string arguments = $"/C curl -F {response.Content}=@{path}" + String.Format("{0:0000}", num) + ".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
                         arguments = Regex.Replace(arguments, @"\n", "");
                         Console.WriteLine(arguments);
                         startInfo.Arguments = arguments;
@@ -114,10 +129,10 @@ namespace Render {
                         }
                     } else {
                         int num = int.Parse(response.Content);
-                        string arguments2 = "-c \"curl -F "+response.Content+"=@"+path+""+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame\"";
+                        string arguments2 = "-c \"curl -F " + response.Content + "=@" + path + "" + String.Format("{0:0000}", num) + ".png blenderrenderserver.youtubeadminist.repl.co/sendFrame\"";
                         arguments2 = Regex.Replace(arguments2, @"\n", "");
                         Console.WriteLine(arguments2);
-                        ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash",arguments2);
+                        ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments2);
                         procStartInfo.RedirectStandardOutput = true;
                         procStartInfo.UseShellExecute = false;
                         procStartInfo.CreateNoWindow = true;
@@ -126,9 +141,34 @@ namespace Render {
                         proc.Start();
                         proc.WaitForExit();
                     }
-                } catch(Exception e){
-                    Console.WriteLine("failed upload "+ e);
-                    fail += 1;
+                }
+            } catch (Exception e) {
+                if (sys == "windows") {
+                    Process process = new Process();
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                    startInfo.FileName = "cmd.exe";
+                    string arguments5 = "/C curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\"frame\":\"100\"}";
+                    arguments5 = Regex.Replace(arguments5, @"\n", "");
+                    Console.WriteLine(arguments5);
+                    startInfo.Arguments = arguments5;
+                    process.StartInfo = startInfo;
+                    process.Start();
+                    process.WaitForExit();
+                } else {
+                    string arguments2 = "-c \"curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\"frame\":\"100\"}\"";
+                    arguments2 = Regex.Replace(arguments2, @"\n", "");
+                    Console.WriteLine(arguments2);
+                    ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments2);
+                    procStartInfo.RedirectStandardOutput = true;
+                    procStartInfo.UseShellExecute = false;
+                    procStartInfo.CreateNoWindow = true;
+                    Process proc = new Process();
+                    proc.StartInfo = procStartInfo;
+                    proc.Start();
+                    proc.WaitForExit();
+                    Console.WriteLine(e);
+                    throw;
                 }
             }
         }
