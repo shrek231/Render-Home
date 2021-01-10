@@ -2,11 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Security;
-using System.Security.Permissions;
+using System.Text.RegularExpressions;
 using System.Threading;
 using RestSharp;
-using RestSharp.Extensions;
 
 namespace Render {
     class Program {
@@ -21,8 +19,10 @@ namespace Render {
             if (osplit[0] == "Unix") {
                 sys = "linux";
             } if (osplit[0] == "Microsoft") {
-                sys = "windows"; 
-            } 
+                sys = "windows";
+            } else {
+                Console.WriteLine("OS not recognized, continuing as Unix");
+            }
             string path = "none"; //make dir
             if (sys == "windows") {
                 path = AppDomain.CurrentDomain.BaseDirectory+@"img\";
@@ -44,7 +44,7 @@ namespace Render {
                     timeout = 30000;
                 } 
                 Thread.Sleep(timeout);
-                Console.WriteLine("Requesting new frame");
+                Console.WriteLine("\nRequesting new frame");
                 var client = new RestClient("https://BlenderRenderServer.youtubeadminist.repl.co/requestFrame");
                 var request = new RestRequest(Method.GET);
                 IRestResponse response = client.Execute(request); //call at anytime in code
@@ -64,6 +64,7 @@ namespace Render {
                     startInfo.Arguments = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + response.Content;
                     process.StartInfo = startInfo;
                     process.Start();
+                    process.WaitForExit();
                 } else {
                     ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash","-c blender -b " + blendpath + "render.blend -o " + path + " -f " + response.Content);
                     procStartInfo.RedirectStandardOutput = true;
@@ -72,6 +73,7 @@ namespace Render {
                     Process proc = new Process();
                     proc.StartInfo = procStartInfo;
                     proc.Start();
+                    proc.WaitForExit();
                 } try {
                     Console.WriteLine("Trying to send frame");
                     if (sys == "windows") {
@@ -79,17 +81,25 @@ namespace Render {
                         ProcessStartInfo startInfo = new ProcessStartInfo();
                         startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                         startInfo.FileName = "cmd.exe";
-                        startInfo.Arguments = "/C curl -F "+response.Content+"=@"+path+response.Content+".png"+" blenderrenderserver.youtubeadminist.repl.co/sendFrame";
+                        int num = int.Parse(response.Content);
+                        string arguments = $"/C curl -F {response.Content}=@{path}"+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
+                        arguments = Regex.Replace(arguments, @"\n", "");
+                        startInfo.Arguments = arguments;
                         process.StartInfo = startInfo;
                         process.Start();
+                        process.WaitForExit();
                     } else {
-                        ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash","-c curl -F "+response.Content+"=@"+path+response.Content+".png"+" blenderrenderserver.youtubeadminist.repl.co/sendFrame");
+                        int num = int.Parse(response.Content);
+                        string arguments2 = $"/C curl -F {response.Content}=@{path}"+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
+                        arguments2 = Regex.Replace(arguments2, @"\n", "");
+                        ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash",arguments2);
                         procStartInfo.RedirectStandardOutput = true;
                         procStartInfo.UseShellExecute = false;
                         procStartInfo.CreateNoWindow = true;
                         Process proc = new Process();
                         proc.StartInfo = procStartInfo;
                         proc.Start();
+                        proc.WaitForExit();
                     }
                 } catch(Exception e){
                     Console.WriteLine(e);
