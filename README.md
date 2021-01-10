@@ -1,4 +1,4 @@
 # Shranime@Home
 render for shranime with Shranime@Home
 
-<h1>backend done, will be on github soon</h1>
+<h1>Almost everything is working</h1>
