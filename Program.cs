@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -12,6 +12,7 @@ namespace Render {
         public static string sys = null;
         public static OperatingSystem os;
         public static bool running = true;
+        public static string read = "continue";
         static void Main(string[] args) {
             os = Environment.OSVersion;//get os
             string ostring = os.ToString();
@@ -38,6 +39,7 @@ namespace Render {
             }
             int timeout = 1000; //start loop
             int fail = 0;
+            bool gttq = true;
             while (running) {
                 if (fail > 1) {
                     Console.WriteLine("no new frames, waiting 30 seconds.");
@@ -51,7 +53,9 @@ namespace Render {
                 WebClient Client = new WebClient ();
                 if (File.Exists(blendpath + "render.blend")) {
                     //nothing to do
+                    Console.WriteLine("Not Redownloading");
                 } else {
+                    Console.WriteLine("Redownloading");
                     Client.DownloadFile("https://BlenderRenderServer.youtubeadminist.repl.co/getBlend", blendpath + "render.blend");
                 }
                 Console.WriteLine("resp = "+response.Content);
@@ -79,9 +83,11 @@ namespace Render {
                     process.Start();
                     process.WaitForExit();
                 } else {
-                    ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash","-c blender -b " + blendpath + "render.blend -o " + path + " -f " + response.Content);
-                    procStartInfo.RedirectStandardOutput = true;
-                    procStartInfo.UseShellExecute = false;
+                    string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " + response.Content + "\"";
+                    arguments3 = Regex.Replace(arguments3, @"\n", "");
+                    ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments3);
+                    procStartInfo.RedirectStandardOutput = false; //error true
+                    procStartInfo.UseShellExecute = true; //false
                     procStartInfo.CreateNoWindow = true;
                     Process proc = new Process();
                     proc.StartInfo = procStartInfo;
@@ -97,6 +103,7 @@ namespace Render {
                         int num = int.Parse(response.Content);
                         string arguments = $"/C curl -F {response.Content}=@{path}"+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
                         arguments = Regex.Replace(arguments, @"\n", "");
+                        Console.WriteLine(arguments);
                         startInfo.Arguments = arguments;
                         process.StartInfo = startInfo;
                         process.Start();
@@ -107,8 +114,9 @@ namespace Render {
                         }
                     } else {
                         int num = int.Parse(response.Content);
-                        string arguments2 = $"/C curl -F {response.Content}=@{path}"+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
+                        string arguments2 = "-c \"curl -F "+response.Content+"=@"+path+""+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame\"";
                         arguments2 = Regex.Replace(arguments2, @"\n", "");
+                        Console.WriteLine(arguments2);
                         ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash",arguments2);
                         procStartInfo.RedirectStandardOutput = true;
                         procStartInfo.UseShellExecute = false;
@@ -117,10 +125,6 @@ namespace Render {
                         proc.StartInfo = procStartInfo;
                         proc.Start();
                         proc.WaitForExit();
-                        DirectoryInfo di = new DirectoryInfo(path);
-                        foreach (FileInfo file in di.GetFiles()) {
-                            file.Delete();
-                        }
                     }
                 } catch(Exception e){
                     Console.WriteLine("failed upload "+ e);
