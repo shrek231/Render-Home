@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -39,20 +39,33 @@ namespace Render {
             int timeout = 1000; //start loop
             int fail = 0;
             while (running) {
-                if (fail > 3) {
+                if (fail > 1) {
                     Console.WriteLine("no new frames, waiting 30 seconds.");
                     timeout = 30000;
-                } 
+                }
                 Thread.Sleep(timeout);
                 Console.WriteLine("\nRequesting new frame");
                 var client = new RestClient("https://BlenderRenderServer.youtubeadminist.repl.co/requestFrame");
                 var request = new RestRequest(Method.GET);
                 IRestResponse response = client.Execute(request); //call at anytime in code
                 WebClient Client = new WebClient ();
-                Client.DownloadFile("https://BlenderRenderServer.youtubeadminist.repl.co/getBlend", blendpath+"render.blend");
-                if (response.Content == "-1") {
+                if (File.Exists(blendpath + "render.blend")) {
+                    //nothing to do
+                } else {
+                    Client.DownloadFile("https://BlenderRenderServer.youtubeadminist.repl.co/getBlend", blendpath + "render.blend");
+                }
+                Console.WriteLine("resp = "+response.Content);
+                string check = response.Content.ToString();
+                if (check.Contains('-')) {
                     Console.WriteLine("No new frames");
                     fail += 1;
+                    DirectoryInfo pn = new DirectoryInfo(path);
+                    foreach (FileInfo file in pn.GetFiles()) {
+                        file.Delete();
+                    } DirectoryInfo bl = new DirectoryInfo(blendpath);
+                    foreach (FileInfo file in bl.GetFiles()) {
+                        file.Delete();
+                    }
                 } else {
                     fail = 0;
                     Console.WriteLine("\nGot new frame "+response.Content);
@@ -88,6 +101,10 @@ namespace Render {
                         process.StartInfo = startInfo;
                         process.Start();
                         process.WaitForExit();
+                        DirectoryInfo di = new DirectoryInfo(path);
+                        foreach (FileInfo file in di.GetFiles()) {
+                            file.Delete();
+                        }
                     } else {
                         int num = int.Parse(response.Content);
                         string arguments2 = $"/C curl -F {response.Content}=@{path}"+String.Format("{0:0000}", num)+".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
@@ -100,9 +117,14 @@ namespace Render {
                         proc.StartInfo = procStartInfo;
                         proc.Start();
                         proc.WaitForExit();
+                        DirectoryInfo di = new DirectoryInfo(path);
+                        foreach (FileInfo file in di.GetFiles()) {
+                            file.Delete();
+                        }
                     }
                 } catch(Exception e){
-                    Console.WriteLine(e);
+                    Console.WriteLine("failed upload "+ e);
+                    fail += 1;
                 }
             }
         }
