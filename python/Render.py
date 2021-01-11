@@ -6,8 +6,8 @@ import sys
 import os
 
 blenderpath = "blender"
-filepath = "/Desktop/blend/"
-outputpath = "/Desktop/op/"
+filepath = "~/Desktop/blend/"
+outputpath = "~/Desktop/op/"
 
 frame = None
 try:
@@ -26,6 +26,6 @@ try:
 
 #except KeyboardInterrupt:
 except:
-    if frame != None:
+    if frame != None and frame > 0:
         print("canceling frame "+ str(frame))
         os.system('curl https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -d "{\\"frame\\":\\"' + str(frame) + '\\"}" -H "Content-Type: application/json"')
