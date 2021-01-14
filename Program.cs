@@ -64,6 +64,7 @@ namespace Render {
                     Console.Clear();
                     Console.WriteLine("no new frames, waiting 30 seconds.");
                     timeout = 30000;
+					redownload = true;
                 }
                 Thread.Sleep(timeout);
                 Console.WriteLine("\nRequesting new frame");
