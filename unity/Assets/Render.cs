@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -158,7 +158,7 @@ public class Render : MonoBehaviour
             process.WaitForExit();
             Application.Quit();
         } else {
-            string arguments2 = "/C curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\\\"frame\\\":\\\""+resp+"\\\"}\"";
+            string arguments2 = "-c \"curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\\\"frame\\\":\\\""+resp+"\\\"}\"\"";
             arguments2 = Regex.Replace(arguments2, @"\n", "");
             ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments2);
             procStartInfo.RedirectStandardOutput = true;
