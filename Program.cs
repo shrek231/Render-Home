@@ -1,55 +1,48 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Net.Mime;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using RestSharp;
 
 namespace Render {
-    class Program {
+    class Program
+    {
+        public static bool threadstart = true;
         public static int resp;
         public static string blendpath = null;
         public static string sys = null;
-        public static OperatingSystem os;
         public static bool running = true;
         public static string read = "continue";
-        public static void Main() {
-            Thread thread1 = new Thread(t1);
-            thread1.Start();
-            while (true)
-            {
-                string quit = Console.ReadLine().ToLower();
-                if (quit == "q") {
-                    exit();
-                }
-            }
+        public bool srender = false;
+
+        static void Main() {
+            Thread SecondThread = new Thread(t1);
+            SecondThread.Start();
         }
+        
         static void t1() {
-            Console.Write("\n");
-            Console.WriteLine("------------------------------");
-            Console.WriteLine("----------Render@Home---------");
-            Console.WriteLine("press 'q' then [ENTER] to quit");
-            Console.WriteLine("------------------------------");
-            Console.Write("\n");
-            os = Environment.OSVersion;//get os
-            string ostring = os.ToString();
-            string[] osplit = ostring.Split(' ');
-            if (osplit[0] == "Microsoft") {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) == true) {
                 sys = "windows";
                 Console.Write("\n");
-                Console.WriteLine("------------------------------");
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("----------Render@Home---------");
                 Console.WriteLine("remember to add belnder to path");
                 Console.WriteLine("------------------------------");
+                Console.ResetColor();
                 Console.Write("\n");
-            } if (osplit[0] == "Unix") {
-                sys = "linux";
             } else {
-                Console.WriteLine("OS not recognized, continuing as Unix ");
+                sys = "linux";
             }
+            Console.Write("\n");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("-----------Render@Home----------");
+            Console.WriteLine("press 'q' then [ENTER] then you \ncan press the X to close the program");
+            Console.WriteLine("--------------------------------");
+            Console.ResetColor();
+            Console.Write("\n");
             string path = "none"; //make dir
             if (sys == "windows") {
                 path = AppDomain.CurrentDomain.BaseDirectory+@"img\";
@@ -63,7 +56,7 @@ namespace Render {
                 DirectoryInfo dire = Directory.CreateDirectory(path);
                 DirectoryInfo di = Directory.CreateDirectory(blendpath);
             }
-            int timeout = 1000; //start loop
+            int timeout = 100; //start loop
             int fail = 0;
             bool redownload = true;
             while (running) {
@@ -106,20 +99,20 @@ namespace Render {
                     fail = 0;
                     Console.WriteLine("\nGot new frame " + response.Content);
                 } try {
-                    if (sys == "windows") {
-                        Process process = new Process();
-                        ProcessStartInfo startInfo = new ProcessStartInfo();
+                    if (sys == "windows")
+                    {
+                        int num = int.Parse(response.Content);
+                        var imgpath = String.Format("{0:0000}", num);
+                        string arguments69 = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + resp;
+                        arguments69 = Regex.Replace(arguments69, @"\n", "");
+                        ProcessStartInfo startInfo = new ProcessStartInfo("cmd.exe",arguments69);
                         startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                        startInfo.FileName = "cmd.exe";
-                        startInfo.Arguments = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + response.Content;
+                        Process process = new Process();
                         process.StartInfo = startInfo;
                         process.Start();
-                        if (process.HasExited) {
-                            exit();
-                        }
                         process.WaitForExit();
                     } else {
-                        string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " + response.Content + "\"";
+                        string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " + resp + "\"";
                         arguments3 = Regex.Replace(arguments3, @"\n", "");
                         ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments3);
                         procStartInfo.RedirectStandardOutput = false; //error true
@@ -128,18 +121,13 @@ namespace Render {
                         Process proc = new Process();
                         proc.StartInfo = procStartInfo;
                         proc.Start();
-                        if (proc.HasExited) {
-                            exit();
-                        }
                         proc.WaitForExit();
                     }
-                } catch (Exception e) {
+                } catch(Exception e) {
+                    Console.WriteLine("render error "+e);
                     exit();
-                    Console.WriteLine(e);
-                    Console.Clear();
-                    Console.WriteLine("Exited Safely");
-                    throw;
                 }
+                
                 Console.Clear();
                 Console.WriteLine("Trying to send frame");
                 if (sys == "windows") {
@@ -179,16 +167,17 @@ namespace Render {
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 startInfo.FileName = "cmd.exe";
-                string arguments5 = "/C curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\"frame\":\""+resp+"\"}";
+                string arguments5 = "/C curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\\\"frame\\\":\\\""+resp+"\\\"}\"";
                 arguments5 = Regex.Replace(arguments5, @"\n", "");
                 startInfo.Arguments = arguments5;
                 process.StartInfo = startInfo;
                 Console.WriteLine("exiting");
                 process.Start();
                 process.WaitForExit();
+                Console.WriteLine("exited");
                 Environment.Exit(1);
             } else {
-                string arguments2 = "-c \"curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\"frame\":\""+resp+"\"}";
+                string arguments2 = "/C \"curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\\\"frame\\\":\\\""+resp+"\\\"}\"\"";
                 arguments2 = Regex.Replace(arguments2, @"\n", "");
                 Console.WriteLine(arguments2);
                 ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments2);
@@ -200,6 +189,7 @@ namespace Render {
                 Console.WriteLine("exiting");
                 proc.Start();
                 proc.WaitForExit();
+                Console.WriteLine("exited");
                 Environment.Exit(1);
             }
         }
