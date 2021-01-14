@@ -14,12 +14,10 @@ using UnityEngine.UI;
 public class Render : MonoBehaviour
 {
     public Text text;
-    public static bool threadstart = true;
     public static int resp;
     public static string blendpath = null;
     public static string sys = null;
     public static bool running = true;
-    public static string read = "continue";
     // Start is called before the first frame update
     public void Start() {
     Thread thread1 = new Thread(render);
@@ -52,6 +50,7 @@ public class Render : MonoBehaviour
             if (fail > 1) {
                 text.text = ("no new frames, waiting 30 seconds.");
                 timeout = 30000;
+                redownload = true;
             }
             Thread.Sleep(timeout);
             text.text = ("\nRequesting new frame");
