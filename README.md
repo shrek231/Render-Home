@@ -1,3 +1,5 @@
 # Render@Home
 render for shranime with Render@Home
-remember to put blender in your path before running
+
+<h1>Removed python and old Csharp for new unity Csharp</h1>
+<h1>all the new releases will be the unity version</h1>
