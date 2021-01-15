@@ -178,10 +178,10 @@ namespace Render {
                 Console.WriteLine("exited");
                 Environment.Exit(1);
             } else {
-                string arguments2 = "-c \"curl -X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \"{\\\"frame\\\":\\\""+resp+"\\\"}\"\"";
+                string arguments2 = "-X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \'{\"frame\":\""+resp+"\"}\' > log.txt";
                 arguments2 = Regex.Replace(arguments2, @"\n", "");
                 Console.WriteLine(arguments2);
-                ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments2);
+                ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/curl", arguments2);
                 procStartInfo.RedirectStandardOutput = true;
                 procStartInfo.UseShellExecute = false;
                 procStartInfo.CreateNoWindow = true;
