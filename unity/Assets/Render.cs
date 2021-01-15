@@ -10,18 +10,20 @@ using System.Threading;
 using RestSharp;
 using UnityEngine;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 public class Render : MonoBehaviour
 {
+    public Text output;
     public Text text;
-    public static int resp;
+    public static int resp = -1;
     public static string blendpath = null;
     public static string sys = null;
     public static bool running = true;
     // Start is called before the first frame update
     public void Start() {
-    Thread thread1 = new Thread(render);
-    thread1.Start();
+        Thread thread1 = new Thread(render);
+        thread1.Start();
     }
     public void render() {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) == true) {
@@ -38,7 +40,7 @@ public class Render : MonoBehaviour
             path = AppDomain.CurrentDomain.BaseDirectory+"/img/";
             blendpath = AppDomain.CurrentDomain.BaseDirectory+"/ble/";
         } if (Directory.Exists(path)) {
-            text.text = ("");
+            //text.text = ("");
         } else {
             DirectoryInfo dire = Directory.CreateDirectory(path);
             DirectoryInfo di = Directory.CreateDirectory(blendpath);
@@ -93,20 +95,26 @@ public class Render : MonoBehaviour
                     ProcessStartInfo startInfo = new ProcessStartInfo("cmd.exe",arguments69);
                     startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                     Process process = new Process();
+                    process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo = startInfo;
                     process.Start();
+                    output.text = "rendering";
                     process.WaitForExit();
+                    output.text = "Not rendering...";
                 } else {
-                    string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " + resp + "\"";
+                    string arguments3 = "-c \"blender -b " + blendpath + "render.blend -o " + path + " -f " + resp+"\"";
                     arguments3 = Regex.Replace(arguments3, @"\n", "");
                     ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments3);
                     procStartInfo.RedirectStandardOutput = false; //error true
                     procStartInfo.UseShellExecute = true; //false
                     procStartInfo.CreateNoWindow = true;
                     Process proc = new Process();
+                    proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo = procStartInfo;
                     proc.Start();
+                    output.text = "rendering";
                     proc.WaitForExit();
+                    output.text = "Not rendering...";
                 }
             } catch(Exception e) {
                 text.text = ("render error "+e);
@@ -118,8 +126,7 @@ public class Render : MonoBehaviour
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 startInfo.FileName = "cmd.exe";
-                int num = int.Parse(response.Content);
-                string arguments = $"/C curl -F {response.Content}=@{path}" + String.Format("{0:0000}", num) + ".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
+                string arguments = $"/C curl -F {response.Content}=@{path}" + String.Format("{0:0000}", resp) + ".png blenderrenderserver.youtubeadminist.repl.co/sendFrame";
                 arguments = Regex.Replace(arguments, @"\n", "");
                 startInfo.Arguments = arguments;
                 process.StartInfo = startInfo;
@@ -130,8 +137,7 @@ public class Render : MonoBehaviour
                     file.Delete();
                 }
             } else {
-                int num = int.Parse(response.Content);
-                string arguments2 = "-c \"curl -F " + response.Content + "=@" + path + "" + String.Format("{0:0000}", num) + ".png blenderrenderserver.youtubeadminist.repl.co/sendFrame\"";
+                string arguments2 = "-c \"curl -F " + response.Content + "=@" + path + "" + String.Format("{0:0000}", resp) + ".png blenderrenderserver.youtubeadminist.repl.co/sendFrame\"";
                 arguments2 = Regex.Replace(arguments2, @"\n", "");
                 ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/bash", arguments2);
                 procStartInfo.RedirectStandardOutput = true;
@@ -158,13 +164,11 @@ public class Render : MonoBehaviour
             process.WaitForExit();
             Application.Quit();
         } else {
-            string arguments2 = "-X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \'{\"frame\":\""+resp+"\"}\' > log.txt";
-            arguments2 = Regex.Replace(arguments2, @"\n", "");
-            ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/curl", arguments2);
-            procStartInfo.RedirectStandardOutput = true;
-            procStartInfo.UseShellExecute = false;
-            procStartInfo.CreateNoWindow = true;
             Process proc = new Process();
+            string arguments2 = "-X POST https://BlenderRenderServer.youtubeadminist.repl.co/cancelFrame -H \"Content-Type: application/json\" -d \'{\"frame\":\""+resp+"\"}\'";
+            arguments2 = Regex.Replace(arguments2, @"\n", "");
+            ProcessStartInfo procStartInfo = new ProcessStartInfo("/bin/curl",arguments2);
+            procStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             proc.StartInfo = procStartInfo;
             proc.Start();
             proc.WaitForExit();
