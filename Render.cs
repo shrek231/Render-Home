@@ -112,19 +112,19 @@ public class Render : MonoBehaviour
                             process.StartInfo.RedirectStandardOutput = true;
                             process.StartInfo.RedirectStandardError = true;
                             process.Start();
-                            string output = process.StandardOutput.ReadToEnd();
+                            string output2 = process.StandardOutput.ReadToEnd();
                             string err = process.StandardError.ReadToEnd();
                             process.WaitForExit();
                             string[] myblendvir;
-                            if (output.Contains("Blender"))
+                            if (output2.Contains("Blender"))
                             {
-                                myblendvir = output.Split("\n");
+                                myblendvir = output2.Split("\n");
                                 blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
                                 blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
                                 Console.WriteLine(blendvirstring);
                             }
                         } else {
-                            Console.WriteLine("Found Blender Vir " + vir);
+                            text.text = ("Found Blender Vir " + vir);
                             Process process = new Process();
                             process.StartInfo.FileName = "/bin/bash";
                             process.StartInfo.Arguments = "-c \"blender -v\"";
@@ -132,23 +132,22 @@ public class Render : MonoBehaviour
                             process.StartInfo.RedirectStandardOutput = true;
                             process.StartInfo.RedirectStandardError = true;
                             process.Start();
-                            string output = process.StandardOutput.ReadToEnd();
+                            string output2 = process.StandardOutput.ReadToEnd();
                             string err = process.StandardError.ReadToEnd();
                             process.WaitForExit();
                             string[] myblendvir;
-                            if (output.Contains("Blender"))
+                            if (output2.Contains("Blender"))
                             {
-                                myblendvir = output.Split("\n");
+                                myblendvir = output2.Split("\n");
                                 blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
                                 blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
-                                Console.WriteLine(blendvirstring);
                             }
                         }
                     } if (blendvirstring == vir) {
-                        Console.WriteLine("correct blender vir");
+                        output.text = ("correct blender vir");
                     } else {
                         fail += 1;
-                        Console.WriteLine("incorrect blender vir");
+                        output.text = ("incorrect blender vir");
                     }
                     //not tested
                     string arguments69 = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + resp;
