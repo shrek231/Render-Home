@@ -14,6 +14,7 @@ using Debug = UnityEngine.Debug;
 
 public class Render : MonoBehaviour
 {
+    public Text error;
     public static string blendvirstring;
     public Text output;
     public Text text;
@@ -51,7 +52,7 @@ public class Render : MonoBehaviour
         bool redownload = true;
         while (running) {
             if (fail >= 1) {
-                text.text = ("no new frames, waiting 30 seconds.");
+                text.text = ("waiting 30 seconds because of an error or no new frames");
                 timeout = 30000;
                 redownload = true;
             }
@@ -84,74 +85,75 @@ public class Render : MonoBehaviour
                     file.Delete();
                 }
             } else {
-                fail = 0;
                 text.text = ("\nGot new frame " + response.Content);
             } try {
-                if (sys == "windows")
+                int num = int.Parse(response.Content);
+                var imgpath = String.Format("{0:0000}", num);
+                var client2 = new RestClient("https://BlenderRenderServer.youtubeadminist.repl.co/version");
+                var request2 = new RestRequest(Method.GET);
+                IRestResponse response2 = client2.Execute(request2); //call at anytime in code
+                string vir = response2.Content;
+                vir = Regex.Replace(vir, @"\n", "");
+                vir = Regex.Replace(vir, "\"", "");
+                if (vir == "null") {
+                    fail += 1;
+                    error.text = ("Unknown Blender Vir");
+                }
+                else
                 {
-                    int num = int.Parse(response.Content);
-                    var imgpath = String.Format("{0:0000}", num);
-                    //not tested
-                    var client2 = new RestClient("https://BlenderRenderServer.youtubeadminist.repl.co/version");
-                    var request2 = new RestRequest(Method.GET);
-                    IRestResponse response2 = client2.Execute(request2); //call at anytime in code
-                    string vir = response2.Content;
-                    vir = Regex.Replace(vir, @"\n", "");
-                    vir = Regex.Replace(vir, "\"", "");
-                    if (vir == "null") {
-                        fail += 1;
-                        Console.WriteLine("Unknown Blender Vir");
-                    } else
+                    if (sys == "windows")
                     {
-                        if (sys == "windows")
+                        Console.WriteLine("Found Blender Vir " + vir);
+                        Process process1 = new Process();
+                        process1.StartInfo.FileName = "cmd.exe";
+                        process1.StartInfo.Arguments = "/c blender -v";
+                        process1.StartInfo.UseShellExecute = false;
+                        process1.StartInfo.RedirectStandardOutput = true;
+                        process1.StartInfo.RedirectStandardError = true;
+                        process1.Start();
+                        string output2 = process1.StandardOutput.ReadToEnd();
+                        string err = process1.StandardError.ReadToEnd();
+                        process1.WaitForExit();
+                        string[] myblendvir;
+                        if (output2.Contains("Blender"))
                         {
-                            Console.WriteLine("Found Blender Vir " + vir);
-                            Process process1 = new Process();
-                            process1.StartInfo.FileName = "cmd.exe";
-                            process1.StartInfo.Arguments = "/c blender -v";
-                            process1.StartInfo.UseShellExecute = false;
-                            process1.StartInfo.RedirectStandardOutput = true;
-                            process1.StartInfo.RedirectStandardError = true;
-                            process1.Start();
-                            string output2 = process1.StandardOutput.ReadToEnd();
-                            string err = process1.StandardError.ReadToEnd();
-                            process1.WaitForExit();
-                            string[] myblendvir;
-                            if (output2.Contains("Blender"))
-                            {
-                                myblendvir = output2.Split('/n');
-                                blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
-                                blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
-                                Console.WriteLine(blendvirstring);
-                            }
-                        } else {
-                            text.text = ("Found Blender Vir " + vir);
-                            Process process2 = new Process();
-                            process2.StartInfo.FileName = "/bin/bash";
-                            process2.StartInfo.Arguments = "-c \"blender -v\"";
-                            process2.StartInfo.UseShellExecute = false;
-                            process2.StartInfo.RedirectStandardOutput = true;
-                            process2.StartInfo.RedirectStandardError = true;
-                            process2.Start();
-                            string output2 = process2.StandardOutput.ReadToEnd();
-                            string err = process2.StandardError.ReadToEnd();
-                            process2.WaitForExit();
-                            string[] myblendvir;
-                            if (output2.Contains("Blender"))
-                            {
-                                myblendvir = output2.Split('\n');
-                                blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
-                                blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
-                            }
+                            myblendvir = output2.Split('\n');
+                            blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
+                            blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
+                            Console.WriteLine(blendvirstring);
                         }
-                    } if (blendvirstring == vir) {
-                        output.text = ("correct blender vir");
                     } else {
-                        fail += 1;
-                        output.text = ("incorrect blender vir");
+                        error.text = ("Found Blender Vir " + vir);
+                        Process process2 = new Process();
+                        process2.StartInfo.FileName = "/bin/bash";
+                        process2.StartInfo.Arguments = "-c \"blender -v\"";
+                        process2.StartInfo.UseShellExecute = false;
+                        process2.StartInfo.RedirectStandardOutput = true;
+                        process2.StartInfo.RedirectStandardError = true;
+                        process2.Start();
+                        string output2 = process2.StandardOutput.ReadToEnd();
+                        string err = process2.StandardError.ReadToEnd();
+                        process2.WaitForExit();
+                        string[] myblendvir;
+                        if (output2.Contains("Blender"))
+                        {
+                            myblendvir = output2.Split('\n');
+                            blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
+                            blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
+                        }
                     }
-                    //not tested
-                    string arguments69 = "/C blender.exe -b " + blendpath + "render.blend -o " + path + " -f " + resp;
+                    if (blendvirstring == vir) {
+                        text.text = ("correct blender vir");
+                        fail = 0;
+                    }
+                    else {
+                        fail += 1;
+                        error.text = ("incorrect blender vir, need vir "+vir)+ ", your vir "+ blendvirstring;
+                    }
+                }
+
+                if (sys == "windows") {
+                    string arguments69 = "/C blender.exe -b " + blendpath + "render.blend -o ftvar3e" + path + " -f " + resp;
                     arguments69 = Regex.Replace(arguments69, @"\n", "");
                     ProcessStartInfo startInfo = new ProcessStartInfo("cmd.exe",arguments69);
                     startInfo.WindowStyle = ProcessWindowStyle.Hidden;
