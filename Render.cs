@@ -14,6 +14,7 @@ using Debug = UnityEngine.Debug;
 
 public class Render : MonoBehaviour
 {
+    public static string blendvirstring;
     public Text output;
     public Text text;
     public static int resp = -1;
@@ -105,16 +106,16 @@ public class Render : MonoBehaviour
                         if (sys == "windows")
                         {
                             Console.WriteLine("Found Blender Vir " + vir);
-                            Process process = new Process();
-                            process.StartInfo.FileName = "cmd.exe";
-                            process.StartInfo.Arguments = "/c blender -v";
-                            process.StartInfo.UseShellExecute = false;
-                            process.StartInfo.RedirectStandardOutput = true;
-                            process.StartInfo.RedirectStandardError = true;
-                            process.Start();
-                            string output2 = process.StandardOutput.ReadToEnd();
-                            string err = process.StandardError.ReadToEnd();
-                            process.WaitForExit();
+                            Process process1 = new Process();
+                            process1.StartInfo.FileName = "cmd.exe";
+                            process1.StartInfo.Arguments = "/c blender -v";
+                            process1.StartInfo.UseShellExecute = false;
+                            process1.StartInfo.RedirectStandardOutput = true;
+                            process1.StartInfo.RedirectStandardError = true;
+                            process1.Start();
+                            string output2 = process1.StandardOutput.ReadToEnd();
+                            string err = process1.StandardError.ReadToEnd();
+                            process1.WaitForExit();
                             string[] myblendvir;
                             if (output2.Contains("Blender"))
                             {
@@ -125,20 +126,20 @@ public class Render : MonoBehaviour
                             }
                         } else {
                             text.text = ("Found Blender Vir " + vir);
-                            Process process = new Process();
-                            process.StartInfo.FileName = "/bin/bash";
-                            process.StartInfo.Arguments = "-c \"blender -v\"";
-                            process.StartInfo.UseShellExecute = false;
-                            process.StartInfo.RedirectStandardOutput = true;
-                            process.StartInfo.RedirectStandardError = true;
-                            process.Start();
-                            string output2 = process.StandardOutput.ReadToEnd();
-                            string err = process.StandardError.ReadToEnd();
-                            process.WaitForExit();
+                            Process process2 = new Process();
+                            process2.StartInfo.FileName = "/bin/bash";
+                            process2.StartInfo.Arguments = "-c \"blender -v\"";
+                            process2.StartInfo.UseShellExecute = false;
+                            process2.StartInfo.RedirectStandardOutput = true;
+                            process2.StartInfo.RedirectStandardError = true;
+                            process2.Start();
+                            string output2 = process2.StandardOutput.ReadToEnd();
+                            string err = process2.StandardError.ReadToEnd();
+                            process2.WaitForExit();
                             string[] myblendvir;
                             if (output2.Contains("Blender"))
                             {
-                                myblendvir = output2.Split("\n");
+                                myblendvir = output2.Split('\n');
                                 blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
                                 blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
                             }
