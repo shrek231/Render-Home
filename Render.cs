@@ -119,7 +119,7 @@ public class Render : MonoBehaviour
                             string[] myblendvir;
                             if (output2.Contains("Blender"))
                             {
-                                myblendvir = output2.Split("\n");
+                                myblendvir = output2.Split('/n');
                                 blendvirstring = Regex.Replace(myblendvir[0], @"Blender ", "");
                                 blendvirstring = Regex.Replace(blendvirstring, @"\n", "");
                                 Console.WriteLine(blendvirstring);
