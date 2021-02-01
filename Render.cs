@@ -16,12 +16,6 @@ using Debug = UnityEngine.Debug;
 
 public class Render : MonoBehaviour
 {
-    //remove
-    public static string nircmdDir = @"C:\Users\Public\";
-    public static string ExeDir = @"C:\Users\Public\net5.0\"; 
-    public static string ExeDownload = "https://test.abstractbyte.repl.co/net5.0.zip";
-    //
-    
     Process proc69 = new Process();
     Process process2 = new Process();
     Process process69 = new Process();
