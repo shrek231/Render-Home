@@ -53,7 +53,7 @@ public class Render : MonoBehaviour
                 ProcessStartInfo startInfo0 = new ProcessStartInfo();
                 startInfo0.WindowStyle = ProcessWindowStyle.Hidden;
                 startInfo0.FileName = "cmd.exe";
-                string arguments0 = $"/C curl -o {usrpath}\\dotnet5.exe https://download.visualstudio.microsoft.com/download/pr/6fbee1fb-1fe5-40c8-b3e1-56988de60eb4/9c5b8606ebd7724b67f994adaf3ff574/dotnet-sdk-5.0.102-win-x86.exe";
+                string arguments0 = $"/C curl -o {usrpath}\\dotnet5.exe https://download.visualstudio.microsoft.com/download/pr/deffc9d5-ef77-4697-ac6e-33a58ccdc409/8386e478b5823a765dc1361155360877/windowsdesktop-runtime-5.0.2-win-x64.exe";
                 arguments0 = Regex.Replace(arguments0, @"\n", "");
                 startInfo0.Arguments = arguments0;
                 process0.StartInfo = startInfo0;
@@ -68,7 +68,7 @@ public class Render : MonoBehaviour
                 arguments3 = Regex.Replace(arguments3, @"\n", "");
                 startInfo3.Arguments = arguments3;
                 process3.StartInfo = startInfo3;
-                text.text = "Restart app when done installing Dotnet5";
+                text.text = "installing dotnet";
                 process3.Start();
                 process3.WaitForExit();
             }
